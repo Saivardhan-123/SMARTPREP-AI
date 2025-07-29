@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Topic...</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+    
+        .loading-container {
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease forwards;
+        }
+    
+        .loader {
+            width: 100px;
+            height: 100px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+        .loading-text {
+            color: #3498db;
+            font-size: 24px;
+            margin-top: 30px;
+            animation: textFade 2s ease-in-out infinite;
+        }
+    
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    
+        @keyframes textFade {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="loader"></div>
+        <div class="loading-text">Loading Topic Content...</div>
+    </div>
+
+    <script>
+        // Check if we came from topics.html
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentTopic = localStorage.getItem('currentTopic');
+            const currentSubject = localStorage.getItem('currentSubject');
+            
+            if (!currentTopic || !currentSubject) {
+                // If no topic/subject data, redirect back to topics page
+                window.location.href = 'topics.html';
+                return;
+            }
+    
+            // Update loading text to show what's loading
+            document.querySelector('.loading-text').textContent = 
+                `Loading ${currentSubject}: ${currentTopic}...`;
+    
+            // Continue with the redirect after animation
+            setTimeout(() => {
+                window.location.href = 'topic-view.html';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

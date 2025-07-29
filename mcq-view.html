@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ View</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-content">
+        <div class="container">
+            <button class="back-button" onclick="goBack()">
+                <span class="back-arrow">←</span> Back to Topic
+            </button>
+            <div class="content-container">
+                <div class="content-header">
+                    <h2 id="topic-title">Multiple Choice Questions</h2>
+                </div>
+                <div id="mcq-container" class="content-body">
+                    <div class="questions-container" id="questions-container">
+                        <div class="loading-message">
+                            <div class="loading-spinner"></div>
+                            <p>Initializing MCQ generation...</p>
+                            <p class="loading-info">Please wait while we prepare your questions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <!-- Rest of your script remains the same -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const requiredData = {
+                    subject: localStorage.getItem('currentSubject'),
+                    topic: localStorage.getItem('currentTopic'),
+                    state: localStorage.getItem('state'),
+                    curriculum: localStorage.getItem('curriculum'),
+                    grade: localStorage.getItem('grade'),
+                    chapterText: localStorage.getItem('currentChapterText'),
+                    numQuestions: localStorage.getItem('numQuestions')
+                };
+
+                console.log("🔍 MCQ View Initialization Data:", requiredData);
+
+                // Update the title with current topic
+                if (requiredData.subject && requiredData.topic) {
+                    document.getElementById('topic-title').textContent = 
+                        `${requiredData.subject}: ${requiredData.topic}`;
+                }
+
+                const missingData = Object.entries(requiredData)
+                    .filter(([key, value]) => !value)
+                    .map(([key]) => key);
+
+                if (missingData.length > 0) {
+                    throw new Error(`Missing required data: ${missingData.join(', ')}. Please select a topic first.`);
+                }
+
+                await generateMCQs();
+            } catch (error) {
+                console.error("❌ Error during MCQ view initialization:", error);
+                const container = document.querySelector(".questions-container");
+                if (container) {
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p>${error.message}</p>
+                            <p class="error-details">Please ensure you have selected a topic and try again. If the error persists, try clearing your browser data.</p>
+                            <button onclick="goBack()" class="retry-button">Go Back</button>
+                        </div>`;
+                }
+            }
+        });
+
+        function displayMCQ(question, index) {
+            const questionElement = document.createElement('div');
+            questionElement.className = 'mcq-question';
+            questionElement.innerHTML = `
+                <div class="question-text">Q${index + 1}. ${question.question}</div>
+                <div class="options-container">
+                    ${question.options.map((option, i) => `
+                        <div class="option-item">
+                            <span class="option-text">${String.fromCharCode(65 + i)}) ${option}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="correct-answer-container">
+                    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                        <div class="flip-front">Show Answer</div>
+                        <div class="flip-back">Answer: ${String.fromCharCode(65 + question.options.indexOf(question.correctAnswer))}</div>
+                    </div>
+                </div>
+            `;
+            return questionElement;
+        }
+
+        function goBack() {
+            window.location.href = 'topic-view.html';
+        }
+    </script>
+</body>
+</html>

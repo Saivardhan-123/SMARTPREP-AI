@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Study Schedule</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            padding: 15px;
+            margin: 0;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            font-size: 2em;
+        }
+
+        .timetable-wrapper {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 10px;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            table-layout: fixed;
+        }
+
+        .timetable th {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .timetable th:first-child,
+        .timetable th:nth-child(2) {
+            width: 15%;
+        }
+
+        .timetable th:last-child {
+            width: 70%;
+        }
+
+        .timetable td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .time-cell {
+            color: #34495e;
+            font-weight: 500;
+            white-space: nowrap;
+            font-size: 1.1em;
+        }
+
+        .subject-cell {
+            color: #2980b9;
+            font-size: 1.1em;
+            padding-left: 30px;
+        }
+
+        .meal-cell {
+            background-color: #fff5e6;
+            color: #f39c12;
+            font-size: 1.1em;
+            padding-left: 30px;
+        }
+
+        .break-cell {
+            background-color: #f8f9fa;
+            color: #95a5a6;
+            font-size: 1.1em;
+            padding-left: 30px;
+        }
+
+        .clickable-subject {
+            cursor: pointer;
+            color: #3498db;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.2s;
+            font-size: 1.1em;
+        }
+
+        .clickable-subject:hover {
+            color: #2980b9;
+        }
+
+        .priority-indicator {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-left: 12px;
+            padding: 3px 8px;
+            background: #f5f6fa;
+            border-radius: 4px;
+        }
+
+        .back-button {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 10px;
+            padding: 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: #2980b9;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .page-container {
+                height: 98vh;
+                max-width: 100%;
+            }
+
+            .timetable th, .timetable td {
+                padding: 12px 15px;
+            }
+
+            .subject-cell, .meal-cell, .break-cell {
+                padding-left: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <h1>Your Study Schedule</h1>
+        <div class="timetable-wrapper">
+            <div id="timetable-container"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get stored data
+            const timeSlots = JSON.parse(localStorage.getItem('timeSlots') || '[]');
+            const schoolStart = localStorage.getItem('schoolStart') || '09:00';
+            const schoolEnd = localStorage.getItem('schoolEnd') || '17:00';
+            
+            console.log("School Hours:", schoolStart, "to", schoolEnd);
+            console.log("Retrieved time slots:", timeSlots);
+
+            if (timeSlots.length === 0) {
+                // If no time slots, get subjects and generate timetable
+                const subjects = JSON.parse(localStorage.getItem('selectedSubjects') || '[]');
+                if (subjects.length > 0) {
+                    console.log("Generating new timetable with subjects:", subjects);
+                    const newSlots = generateTimeSlots(subjects, schoolStart, schoolEnd);
+                    localStorage.setItem('timeSlots', JSON.stringify(newSlots));
+                    displayTimetable(newSlots);
+                } else {
+                    console.error("No subjects found");
+                    document.getElementById('timetable-container').innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <p style="color: #e74c3c;">No subjects selected. Please go back and select your subjects.</p>
+                            <button onclick="window.location.href='timetable-setup.html'" class="back-button">
+                                Back to Setup
+                            </button>
+                        </div>
+                    `;
+                }
+            } else {
+                // Display existing time slots
+                displayTimetable(timeSlots);
+            }
+        });
+    </script>
+</body>
+</html>

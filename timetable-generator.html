@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Assign Priorities</h2>
+        <div id="subject-container"></div>
+
+        <h2>Enter College Timings</h2>
+        <div class="time-inputs">
+            <label for="college-start-time">College Start Time:</label>
+            <input type="time" id="college-start-time">
+            <label for="college-end-time">College End Time:</label>
+            <input type="time" id="college-end-time">
+        </div>
+
+        <button onclick="generateTimetable()">Generate Timetable</button>
+
+        <h2>Generated Timetable</h2>
+        <div id="timetable-container"></div>
+    </div>
+</body>
+</html>

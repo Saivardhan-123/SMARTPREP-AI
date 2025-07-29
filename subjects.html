@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subjects Priority Selection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Select Priority for Subjects</h2>
+        <div class="subject-container" id="subject-list">
+            <p>Loading subjects...</p>
+        </div>
+        <button onclick="generateTimetable()">Generate Timetable</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const subjectListElement = document.getElementById("subject-list");
+        
+            try {
+                const state = sessionStorage.getItem("state");
+                const curriculum = sessionStorage.getItem("curriculum");
+                const grade = sessionStorage.getItem("grade");
+        
+                if (!state || !curriculum || !grade) {
+                    subjectListElement.innerHTML = `<p>Error: Missing required parameters.</p>`;
+                    return;
+                }
+        
+                const url = `http://127.0.0.1:3000/get-subjects?state=${encodeURIComponent(state)}&curriculum=${encodeURIComponent(curriculum)}&grade=${encodeURIComponent(grade)}`;
+                console.log("Fetching subjects from:", url); // Debugging log
+        
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+        
+                const data = await response.json();
+                
+                if (!data.subjects || data.subjects.length === 0) {
+                    subjectListElement.innerHTML = `<p>No subjects found.</p>`;
+                    return;
+                }
+        
+                sessionStorage.setItem("subjects", JSON.stringify(data.subjects));
+        
+                subjectListElement.innerHTML = data.subjects.map(subj => `
+                    <div class="subject-item">
+                        <label>${subj}</label>
+                        <select class="priority-dropdown" data-subject="${subj}">
+                            <option value="">Select Priority</option>
+                            ${Array.from({ length: data.subjects.length }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+                        </select>
+                    </div>
+                `).join("");
+            } catch (error) {
+                console.error("Error fetching subjects:", error);
+                subjectListElement.innerHTML = `<p>Failed to load subjects.</p>`;
+            }
+        });
+        
+    </script>
+</body>
+</html>

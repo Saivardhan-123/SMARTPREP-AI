@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartPrep</title>
+  <link rel="stylesheet" href="style2.css" />
+  <style>
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(245, 247, 250, 0.97));
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 25px;
+      backdrop-filter: blur(5px);
+    }
+
+    .page-transition-overlay.slide-up {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .loading-text {
+      font-size: 1.6em;
+      color: #2c3e50;
+      text-align: center;
+      font-weight: 500;
+      margin-bottom: 20px;
+      max-width: 600px;
+      line-height: 1.4;
+      animation: fadeInUp 0.6s ease-out;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(52, 152, 219, 0.1);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite, fadeIn 0.5s ease-out;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero h2 {
+      font-size: 3em;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 1.3em;
+      color: #34495e;
+      margin: 25px auto;
+      max-width: 600px;
+      line-height: 1.6;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    .get-started-btn {
+      transition: all 0.3s ease;
+      opacity: 0;
+    }
+
+    .get-started-btn.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .hero h2 {
+        font-size: 2.2em;
+      }
+
+      .hero p {
+        font-size: 1.1em;
+        padding: 0 20px;
+      }
+
+      .loading-text {
+        font-size: 1.3em;
+        padding: 0 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content-wrapper">
+    <header class="navbar">
+      <h1 class="logo">SmartPrep</h1>
+      <div class="nav-buttons">
+        <button class="btn-outline" onclick="openLoginModal()">Login</button>
+        <button class="btn-filled" onclick="openRegisterModal()">Register</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h2>Prepare Smarter, Not Harder</h2>
+        <p>Experience AI-powered learning with personalized study plans and learning materials tailored to your needs</p>
+        <button class="get-started-btn" onclick="showSection()" style="display: none;">Get Started</button>
+      </section>
+    </main>
+  </div>
+
+  <div class="page-transition-overlay">
+    <div class="loading-text">Initializing your personalized learning journey...</div>
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeLoginModal()">&times;</span>
+      <h3>Login</h3>
+      <form id="login" method="POST" onsubmit="return validateLogin(event)">
+        <input type="email" id="login-email" placeholder="Email" required />
+        <input type="password" id="login-password" placeholder="Password" required />
+        <button type="submit" class="btn-filled">Login</button>
+        <p id="login-error-message" class="error-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeRegisterModal()">&times;</span>
+      <h3>Register</h3>
+      <form id="register" method="POST" onsubmit="return validateRegister(event)">
+        <input type="text" id="register-name" placeholder="Full Name" required />
+        <input type="email" id="register-email" placeholder="Email" required />
+        <input type="password" id="register-password" placeholder="Password" required />
+        <input type="password" id="register-confirm-password" placeholder="Confirm Password" required />
+        <button type="submit" class="btn-filled">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Clear session data and hide "Get Started" on page load
+    window.onload = function () {
+      sessionStorage.clear();
+      document.querySelector('.get-started-btn').style.display = 'none';
+    };
+  
+    function showSection() {
+      const wrapper = document.querySelector('.content-wrapper');
+      const overlay = document.querySelector('.page-transition-overlay');
+      
+      document.body.style.overflow = 'hidden';
+      wrapper.classList.add('slide-up');
+      
+      setTimeout(() => {
+        overlay.classList.add('slide-up');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 2000);
+      }, 300);
+    }
+  
+    function openLoginModal() {
+      document.getElementById('loginModal').style.display = 'block';
+    }
+  
+    function closeLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+    }
+  
+    function openRegisterModal() {
+      document.getElementById('registerModal').style.display = 'block';
+    }
+  
+    function closeRegisterModal() {
+      document.getElementById('registerModal').style.display = 'none';
+    }
+  
+    function validateRegister(event) {
+      event.preventDefault();
+      const name = document.getElementById('register-name').value.trim();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+      const confirmPassword = document.getElementById('register-confirm-password').value;
+  
+      if (!name || !email || !password || !confirmPassword) {
+        alert("Please fill in all fields.");
+        return false;
+      }
+  
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return false;
+      }
+  
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return false;
+      }
+  
+      // Store credentials in session only (not persistent)
+      sessionStorage.setItem('isRegisteredNow', 'true');
+      sessionStorage.setItem('email', email);
+      sessionStorage.setItem('password', password);
+  
+      alert("Registration successful! Please login now.");
+      closeRegisterModal();
+      return true;
+    }
+  
+    function validateLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errorMessage = document.getElementById('login-error-message');
+      errorMessage.textContent = '';
+  
+      // Check if registered this session
+      if (!sessionStorage.getItem('isRegisteredNow')) {
+        alert("Please register first.");
+        closeLoginModal();
+        return false;
+      }
+  
+      const registeredEmail = sessionStorage.getItem('email');
+      const registeredPassword = sessionStorage.getItem('password');
+  
+      // Update the validateLogin function's success part
+      if (email !== registeredEmail || password !== registeredPassword) {
+        errorMessage.textContent = 'Invalid login credentials.';
+        errorMessage.style.color = 'red';
+        return false;
+      }
+
+      alert('Login successful!');
+      sessionStorage.setItem('isLoggedInNow', 'true');
+      closeLoginModal();
+      const getStartedBtn = document.querySelector('.get-started-btn');
+      getStartedBtn.style.opacity = '0';
+      getStartedBtn.style.display = 'inline-block';
+      // Force a reflow to ensure the animation triggers
+      getStartedBtn.offsetHeight;
+      getStartedBtn.style.opacity = '1';
+      return true;
+    }
+  </script>
+</body>
+</html>

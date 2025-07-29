@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Setup</title>
+    <link rel="stylesheet" href="timetable-setup.css">
+    <link rel="stylesheet" href="transitions.css">
+    <style>
+        /* Add loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-message {
+            font-size: 1.5em;
+            color: #3498db;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-message">Generating your personalized study timetable...</div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="setup-container">
+        <div class="setup-header">
+            <h2>Setup Your Study Schedule</h2>
+            <p>Select subjects and set their priorities to generate your personalized timetable</p>
+        </div>
+        
+        <div class="subject-selection">
+            <div id="subject-container">
+                <!-- Subjects will be dynamically added here -->
+            </div>
+        </div>
+
+        <div class="time-settings">
+            <div class="time-input">
+                <div>
+                    <label for="college-start-time">School Start Time:</label>
+                    <input type="time" id="college-start-time" value="09:00">
+                </div>
+                <div>
+                    <label for="college-end-time">School End Time:</label>
+                    <input type="time" id="college-end-time" value="17:00">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="generateTimetableWithTransition()" class="generate-btn">Generate Timetable</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function generateTimetableWithTransition() {
+            // Show loading overlay
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+
+            // Generate timetable after a short delay to show the transition
+            setTimeout(() => {
+                generateTimetable();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

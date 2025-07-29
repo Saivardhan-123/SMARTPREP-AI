@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Topics...</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        .loading-container {
+            text-align: center;
+        }
+
+        .infinity-loader {
+            position: relative;
+            width: 150px;
+            height: 60px;
+        }
+
+        .infinity-path {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .moving-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            animation: moveAlongInfinity 3s linear infinite;
+        }
+
+        @keyframes moveAlongInfinity {
+            0% { 
+                left: 0;
+                top: 30px;
+            }
+            25% {
+                left: 75px;
+                top: 0;
+            }
+            50% {
+                left: 150px;
+                top: 30px;
+            }
+            75% {
+                left: 75px;
+                top: 60px;
+            }
+            100% {
+                left: 0;
+                top: 30px;
+            }
+        }
+
+        .infinity-shape {
+            position: absolute;
+            width: 150px;
+            height: 60px;
+            border: 6px solid #e0e0e0;
+            border-radius: 60px 60px 0 0;
+            transform-origin: 50% 100%;
+        }
+
+        .infinity-shape:before {
+            content: '';
+            position: absolute;
+            width: 75px;
+            height: 60px;
+            border: 6px solid #e0e0e0;
+            border-radius: 60px 60px 0 0;
+            transform: rotate(180deg);
+            transform-origin: 100% 50%;
+            left: -6px;
+            top: -6px;
+        }
+
+        .infinity-shape:after {
+            content: '';
+            position: absolute;
+            width: 75px;
+            height: 60px;
+            border: 6px solid #e0e0e0;
+            border-radius: 60px 60px 0 0;
+            transform: rotate(180deg);
+            transform-origin: 0% 50%;
+            right: -6px;
+            top: -6px;
+        }
+
+        .loading-text {
+            color: #3498db;  /* Same blue as subjects */
+            font-size: 20px;
+            margin-top: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            padding-left: 20px;
+            position: relative;
+        }
+        .loading-text:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-text:hover {
+            color: #2980b9;
+            transform: translateX(10px);
+        }
+        .loading-text:hover:before {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="infinity-loader">
+            <div class="infinity-path">
+                <div class="moving-dot"></div>
+            </div>
+            <div class="infinity-shape"></div>
+        </div>
+        <div class="loading-text">Loading Topics...</div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            window.location.href = 'topics.html';
+        }, 2000);
+    </script>
+</body>
+</html>

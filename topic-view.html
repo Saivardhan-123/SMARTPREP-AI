@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic View</title>
+    <link rel="stylesheet" href="timetable.css">
+    <link rel="stylesheet" href="transitions.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .topics-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .back-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #1a252f;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition" id="pageTransition">
+        <div class="loading-text">Loading...</div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="page-content">
+        <div class="topics-container">
+            <h2 id="topicTitle">Chapter Topics</h2>
+            <div id="chapter-display"></div>
+            <div class="generator-controls">
+                <div class="control-group">
+                    <label for="num-questions">Number of MCQs:</label>
+                    <input type="number" id="num-questions" min="1" value="5">
+                    <button onclick="redirectToMCQ()">Generate MCQs</button>
+                </div>
+                <div class="control-group">
+                    <label for="num-summary">Number of Summary Points:</label>
+                    <input type="number" id="num-summary" min="1" value="5">
+                    <button onclick="redirectToSummary()">Generate Summary</button>
+                </div>
+            </div>
+            <button onclick="navigateBack()" class="back-btn">Back to Timetable</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Show transition when navigating
+        function redirectToMCQ() {
+            // Get and validate all required data
+            const numQuestions = document.getElementById('num-questions').value;
+            const currentSubject = localStorage.getItem('currentSubject');
+            const currentTopic = localStorage.getItem('currentTopic');
+            const currentChapterText = localStorage.getItem('currentChapterText');
+
+            // Validate data
+            if (!currentSubject || !currentTopic || !currentChapterText) {
+                alert("Please select a topic first.");
+                return;
+            }
+
+            if (!numQuestions || numQuestions < 1) {
+                alert("Please enter a valid number of questions (1-20).");
+                return;
+            }
+
+            // Store data
+            localStorage.setItem('numQuestions', numQuestions);
+            
+            // Show transition
+            const transition = document.getElementById('pageTransition');
+            transition.classList.add('active');
+            
+            // Redirect after transition
+            setTimeout(() => {
+                window.location.href = 'mcq-view.html';
+            }, 500);
+        }
+
+        function redirectToSummary() {
+            // Get and validate all required data
+            const numSummary = document.getElementById('num-summary').value;
+            const currentSubject = localStorage.getItem('currentSubject');
+            const currentTopic = localStorage.getItem('currentTopic');
+            const currentChapterText = localStorage.getItem('currentChapterText');
+
+            // Validate data
+            if (!currentSubject || !currentTopic || !currentChapterText) {
+                alert("Please select a topic first.");
+                return;
+            }
+
+            if (!numSummary || numSummary < 1) {
+                alert("Please enter a valid number of summary points (1-20).");
+                return;
+            }
+
+            // Store data
+            localStorage.setItem('numSummary', numSummary);
+            
+            // Show transition
+            const transition = document.getElementById('pageTransition');
+            transition.classList.add('active');
+            
+            // Redirect after transition
+            setTimeout(() => {
+                window.location.href = 'summary-view.html';
+            }, 500);
+        }
+
+        function navigateBack() {
+            const transition = document.getElementById('pageTransition');
+            transition.classList.add('active');
+            
+            setTimeout(() => {
+                window.location.href = 'timetable.html';
+            }, 500);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            const topicTitle = document.getElementById('topicTitle');
+            const chapterDisplay = document.getElementById('chapter-display');
+            const pageContent = document.querySelector('.page-content');
+            
+            // Get the current topic and subject from localStorage
+            const currentTopic = localStorage.getItem('currentTopic');
+            const currentSubject = localStorage.getItem('currentSubject');
+            
+            // Update the title with both subject and topic
+            if (currentSubject && currentTopic) {
+                topicTitle.textContent = `${currentSubject} - ${currentTopic}`;
+            } else {
+                topicTitle.textContent = 'Topic View';
+            }
+            
+            // Show content with animation
+            setTimeout(() => {
+                pageContent.classList.add('visible');
+            }, 100);
+        });
+    </script>
+</body>
+</html>

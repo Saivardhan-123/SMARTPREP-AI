@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ Generator</title>
+    <link rel="stylesheet" href="mcq-generator.css">
+</head>
+<body>
+    <div class="generator-container">
+        <h2>Generate Study Materials</h2>
+        <div class="current-selection">
+            <p>Subject: <span id="selectedSubject"></span></p>
+            <p>Topic: <span id="selectedTopic"></span></p>
+        </div>
+        <div class="generator-controls">
+            <div class="control-group">
+                <label for="num-questions">Number of MCQs:</label>
+                <input type="number" id="num-questions" min="1" max="20" value="5">
+                <button onclick="generateMCQs()">Generate MCQs</button>
+            </div>
+            <div class="control-group">
+                <label for="num-summary">Number of Summary Points:</label>
+                <input type="number" id="num-summary" min="1" max="10" value="5">
+                <button onclick="generateSummary()">Generate Summary</button>
+            </div>
+        </div>
+        <div id="mcq-container" class="result-container"></div>
+        <button onclick="window.location.href='timetable.html'" class="back-btn">Back to Timetable</button>
+    </div>
+
+    <script>
+    window.onload = function() {
+        // Initialize global variables from localStorage
+        currentSubject = localStorage.getItem('currentSubject');
+        currentTopic = localStorage.getItem('currentTopic');
+        currentChapterText = localStorage.getItem('currentChapterText');
+        currentState = localStorage.getItem('currentState');
+        currentCurriculum = localStorage.getItem('currentCurriculum');
+        currentGrade = localStorage.getItem('currentGrade');
+        
+        // Display current subject and topic
+        document.getElementById('selectedSubject').textContent = currentSubject || 'Not selected';
+        document.getElementById('selectedTopic').textContent = currentTopic || 'Not selected';
+    }
+</script>
+    <script src="script.js"></script>
+</body>
+</html>
