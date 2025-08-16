@@ -63,7 +63,8 @@ async function generateSummary() {
             chapterTextPreview: data.chapterText.substring(0, 100) + "..."
         });
 
-        const response = await fetch("http://localhost:3000/api/generate-summary", {
+        const response = await fetch("https://smartprep-ai-work.onrender.com/api/generate-summary"
+, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -149,7 +150,8 @@ async function handleTopicClick(topic, subject) {
 
         // First check if server is available
         try {
-            const healthCheck = await fetch("http://localhost:3000/health");
+            const healthCheck = await fetch("https://smartprep-ai-work.onrender.com/health"
+);
             if (!healthCheck.ok) {
                 throw new Error("Server is not responding properly");
             }
@@ -170,7 +172,8 @@ async function handleTopicClick(topic, subject) {
         // Then fetch the content
         let response;
         try {
-            response = await fetch("http://localhost:3000/api/get-chapter-content", {
+            response = await fetch("https://smartprep-ai-work.onrender.com/api/get-chapter-content"
+, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -360,7 +363,8 @@ async function generateMCQs() {
         }
 
         // Make API call with all required data
-        const response = await fetch('http://localhost:3000/api/generate-mcq', {
+        const response = await fetch('https://smartprep-ai-work.onrender.com/api/generate-mcq'
+, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -459,7 +463,8 @@ async function fetchAndRedirect() {
     localStorage.setItem("grade", grade);
 
     try {
-        const response = await fetch(`http://127.0.0.1:3000/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}`);
+        const response = await fetch(`https://smartprep-ai-work.onrender.com/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}
+`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
@@ -494,7 +499,8 @@ async function fetchSubjects() {
     console.log("📌 Fetching Subjects with:", { state, curriculum, grade });
 
     try {
-        const response = await fetch(`http://127.0.0.1:3000/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}`);
+        const response = await fetch(`https://smartprep-ai-work.onrender.com/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}
+`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
@@ -937,9 +943,10 @@ async function fetchTopics(subject) {
 
         console.log("🌐 Fetching from API with:", { state, curriculum, grade, subject });
 
-        const response = await fetch(`http://127.0.0.1:3000/get-topics?${new URLSearchParams({
-            state, curriculum, grade, subject
-        })}`);
+        const response = await fetch(`https://smartprep-ai-work.onrender.com/get-topics?${new URLSearchParams({
+    state, curriculum, grade, subject
+})}
+`);
         
         if (!response.ok) {
             throw new Error(`API Error: ${response.status} - ${response.statusText}`);
