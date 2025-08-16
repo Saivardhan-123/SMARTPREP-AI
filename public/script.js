@@ -452,6 +452,11 @@ async function generateMCQs() {
     }
 }
 
+// Configuration for different environments
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:8080' 
+    : 'https://smartprep-ai-work.onrender.com';
+
 // Add this new function
 async function fetchAndRedirect() {
     const state = document.getElementById("state").value;
@@ -464,7 +469,7 @@ async function fetchAndRedirect() {
 
     try {
         const response = await fetch(
-            `https://smartprep-ai-work.onrender.com/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}`
+            `${API_BASE_URL}/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}`
           );
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -500,8 +505,7 @@ async function fetchSubjects() {
     console.log("📌 Fetching Subjects with:", { state, curriculum, grade });
 
     try {
-        const response = await fetch(`https://smartprep-ai-work.onrender.com/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}
-`);
+        const response = await fetch(`${API_BASE_URL}/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();

@@ -17,10 +17,6 @@ app.get("/api/hello", (req, res) => {
     res.json({ message: "Hello from backend" });
   });
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-  });
-
 // Add health check endpoint at the top of your routes
 app.get("/health", (req, res) => {
     res.json({ status: "ok" });
@@ -53,7 +49,7 @@ app.get("/get-subjects", async (req, res) => {
                 headers: {
                     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:3000",
+                    "HTTP-Referer": process.env.NODE_ENV === 'production' ? "https://smartprep-ai-work.onrender.com" : "http://localhost:8080",
                     "X-Title": "SmartPrep"
                 },
             }
@@ -120,7 +116,7 @@ Return ONLY the numbered list of topics, nothing else.`;
                 headers: {
                     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:3000",
+                    "HTTP-Referer": process.env.NODE_ENV === 'production' ? "https://smartprep-ai-work.onrender.com" : "http://localhost:8080",
                     "X-Title": "SmartPrep"
                 },
             }
@@ -172,7 +168,7 @@ app.get("/get-chapters", async (req, res) => {
                 headers: {
                     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:3000",
+                    "HTTP-Referer": process.env.NODE_ENV === 'production' ? "https://smartprep-ai-work.onrender.com" : "http://localhost:8080",
                     "X-Title": "SmartPrep"
                 },
             }
@@ -273,7 +269,7 @@ Requirements:
                 headers: {
                     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:3000",
+                    "HTTP-Referer": process.env.NODE_ENV === 'production' ? "https://smartprep-ai-work.onrender.com" : "http://localhost:8080",
                     "X-Title": "SmartPrep"
                 },
             }
@@ -365,7 +361,7 @@ Format: Return numbered points, one per line.`;
                 headers: {
                     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:3000",
+                    "HTTP-Referer": process.env.NODE_ENV === 'production' ? "https://smartprep-ai-work.onrender.com" : "http://localhost:8080",
                     "X-Title": "SmartPrep"
                 },
             }
@@ -480,7 +476,7 @@ Do not include any additional text, headers, or formatting.`;
                 headers: {
                     Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:3000",
+                    "HTTP-Referer": process.env.NODE_ENV === 'production' ? "https://smartprep-ai-work.onrender.com" : "http://localhost:8080",
                     "X-Title": "SmartPrep"
                 },
             }
@@ -506,6 +502,11 @@ Do not include any additional text, headers, or formatting.`;
             details: err.message
         });
     }
+});
+
+// Catch-all route for serving the React app (must be last)
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ✅ Start the server
