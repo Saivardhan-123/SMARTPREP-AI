@@ -463,8 +463,9 @@ async function fetchAndRedirect() {
     localStorage.setItem("grade", grade);
 
     try {
-        const response = await fetch(`https://smartprep-ai-work.onrender.com/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}
-`);
+        const response = await fetch(
+            `https://smartprep-ai-work.onrender.com/get-subjects?state=${state}&curriculum=${curriculum}&grade=${grade}`
+          );
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
