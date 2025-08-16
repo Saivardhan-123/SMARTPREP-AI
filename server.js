@@ -1,21 +1,25 @@
 const express = require("express");
+const path = require("path");
 const axios = require("axios");
 const cors = require("cors");
 require("dotenv").config();
-const { OpenAI } = require("openai"); // ✅ Import OpenAI SDK
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 8080;
 require('dotenv').config();
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-// ✅ Initialize OpenAI client
-const openai = new OpenAI({
-    apiKey: OPENAI_API_KEY,
-});
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/api/hello", (req, res) => {
+    res.json({ message: "Hello from backend" });
+  });
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
 
 // Add health check endpoint at the top of your routes
 app.get("/health", (req, res) => {
@@ -34,21 +38,23 @@ app.get("/get-subjects", async (req, res) => {
         }
 
         const response = await axios.post(
-            "https://api.openai.com/v1/chat/completions",
+            "https://openrouter.ai/api/v1/chat/completions",
             {
-                model: "gpt-3.5-turbo",
+                model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
                 messages: [{ role: "system", content: `List subjects for ${curriculum} curriculum for Grade ${grade} in ${state}.` }],
                 max_tokens: 300,
             },
             {
                 headers: {
-                    Authorization: `Bearer ${OPENAI_API_KEY}`,
+                    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "SmartPrep"
                 },
             }
         );
 
-        console.log("✅ Raw OpenAI Response:", JSON.stringify(response.data, null, 2));
+        console.log("✅ Raw OpenRouter Response:", JSON.stringify(response.data, null, 2));
 
         const subjects = response.data.choices[0]?.message?.content?.trim().split("\n") || [];
 
@@ -86,23 +92,34 @@ Requirements:
 
 Return ONLY the numbered list of topics, nothing else.`;
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                {
-                    role: "system",
-                    content: `You are a ${subject} curriculum expert. Only provide topics that are specifically part of ${subject} for grade ${grade}.`
+        const response = await axios.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+                model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are a ${subject} curriculum expert. Only provide topics that are specifically part of ${subject} for grade ${grade}.`
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                max_tokens: 500,
+                temperature: 0.7
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "SmartPrep"
                 },
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-            max_tokens: 500,
-            temperature: 0.7
-        });
+            }
+        );
 
-        const content = response.choices[0].message.content.trim();
+        const content = response.data.choices[0].message.content.trim();
         console.log("🧠 GPT Raw Response:", content);
 
         const topics = content
@@ -138,16 +155,18 @@ app.get("/get-chapters", async (req, res) => {
         const prompt = `List chapters for the subject "${subject}" for class ${grade} under the ${curriculum} curriculum in ${state}. Return just the list.`;
 
         const response = await axios.post(
-            "https://api.openai.com/v1/chat/completions",
+            "https://openrouter.ai/api/v1/chat/completions",
             {
-                model: "gpt-3.5-turbo",
+                model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 300,
             },
             {
                 headers: {
-                    Authorization: `Bearer ${OPENAI_API_KEY}`,
+                    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "SmartPrep"
                 },
             }
         );
@@ -156,7 +175,7 @@ app.get("/get-chapters", async (req, res) => {
         console.log("🧠 GPT Raw Response:", content);
 
         if (!content || typeof content !== "string") {
-            return res.status(404).json({ error: "Empty content from OpenAI" });
+            return res.status(404).json({ error: "Empty content from OpenRouter" });
         }
 
         const chapters = content
@@ -230,19 +249,30 @@ Requirements:
 6. Stay focused on the specific scientific concepts
 7. Include practical examples and applications where relevant`;
 
-        console.log("🤖 Generating content with OpenAI...");
+        console.log("🤖 Generating content with OpenRouter...");
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-            ],
-            temperature: 0.7,
-            max_tokens: 800
-        });
+        const response = await axios.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+                model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 800
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "SmartPrep"
+                },
+            }
+        );
 
-        const content = response.choices[0].message.content.trim();
+        const content = response.data.choices[0].message.content.trim();
         
         if (!content) {
             console.error("❌ No content generated");
@@ -261,10 +291,10 @@ Requirements:
     } catch (error) {
         console.error("❌ Error in /api/get-chapter-content:", error);
         
-        // Check if it's an OpenAI API error
+        // Check if it's an OpenRouter API error
         if (error.response?.data?.error) {
             return res.status(500).json({
-                error: "OpenAI API error",
+                error: "OpenRouter API error",
                 details: error.response.data.error
             });
         }
@@ -314,16 +344,27 @@ Format: Return numbered points, one per line.`;
 
         console.log("🤖 Generating summary...");
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-            ],
-            temperature: 0.7
-        });
+        const response = await axios.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+                model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                temperature: 0.7
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "SmartPrep"
+                },
+            }
+        );
 
-        const summary = response.choices[0].message.content.trim();
+        const summary = response.data.choices[0].message.content.trim();
 
         // Validate generated summary
         if (!subject.toLowerCase().includes('math') && summary.toLowerCase().includes('real number')) {
@@ -361,7 +402,7 @@ app.post("/api/generate-mcq", async (req, res) => {
         // Validate input parameters
         if (!subject || !topic || !content || !numQuestions) {
             console.error("❌ Missing required fields:", { subject, topic, content: !!content, numQuestions });
-            return res.status(400).json({ error: "Missing required fields" });
+            return res.status(500).json({ error: "Missing required fields" });
         }
 
         // Validate content length
@@ -397,7 +438,7 @@ D) Option D
 Make sure each question is separated by a blank line.
 Do not include any additional text, headers, or formatting.`;
 
-        console.log("🤖 Sending prompt to OpenAI with specific subject:", specificSubject);
+        console.log("🤖 Sending prompt to OpenRouter with specific subject:", specificSubject);
 
         // Estimate tokens: ~150-250 tokens per question (question, 4 options, answer format)
         const estimated_tokens_per_question = 200; // Average tokens per question
@@ -409,28 +450,39 @@ Do not include any additional text, headers, or formatting.`;
 
         console.log(`⚙️ Using dynamic_max_tokens: ${dynamic_max_tokens} for ${numQuestions} questions.`);
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo-16k",
-            messages: [
-                {
-                    role: "system",
-                    content: `You are a ${specificSubject} teacher. Create EXACTLY ${numQuestions} unique questions about ${topic}
-                     that test understanding of scientific concepts and principles. Focus on
-                      practical applications and real-world examples.`
+        const response = await axios.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+                model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are a ${specificSubject} teacher. Create EXACTLY ${numQuestions} unique questions about ${topic}
+                         that test understanding of scientific concepts and principles. Focus on
+                          practical applications and real-world examples.`
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: dynamic_max_tokens // Use the new calculated value
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "SmartPrep"
                 },
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: dynamic_max_tokens // Use the new calculated value
-        });
+            }
+        );
 
-        const questions = completion.choices[0]?.message?.content;
+        const questions = response.data.choices[0]?.message?.content;
         
         if (!questions) {
-            console.error("❌ No content in OpenAI response");
+            console.error("❌ No content in OpenRouter response");
             return res.status(500).json({ error: "No questions generated" });
         }
 
@@ -450,6 +502,6 @@ Do not include any additional text, headers, or formatting.`;
 });
 
 // ✅ Start the server
-app.listen(3000, () => {
-    console.log(`✅ Server is running on http://localhost:3000`);
-});
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });

@@ -1,4 +1,4 @@
-const apiKey = process.env.OPENAI_API_KEY;
+// OpenRouter API key is handled server-side
 
 document.addEventListener("DOMContentLoaded", function () {
     const subjectList = document.getElementById("subject-list");
