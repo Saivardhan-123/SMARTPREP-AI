@@ -41,7 +41,12 @@ app.get("/get-subjects", async (req, res) => {
             "https://openrouter.ai/api/v1/chat/completions",
             {
                 model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-                messages: [{ role: "system", content: `List subjects for ${curriculum} curriculum for Grade ${grade} in ${state}.` }],
+                messages: [
+                    {
+                        role: "system",
+                        content: `List only subject names (one per line) for ${curriculum} curriculum for Grade ${grade} in ${state}.`
+                    }
+                ],
                 max_tokens: 300,
             },
             {
@@ -56,7 +61,9 @@ app.get("/get-subjects", async (req, res) => {
 
         console.log("✅ Raw OpenRouter Response:", JSON.stringify(response.data, null, 2));
 
-        const subjects = response.data.choices[0]?.message?.content?.trim().split("\n") || [];
+        // ✅ FIXED parsing
+        const content = response.data.choices[0].message.content.trim();
+        const subjects = content.split("\n").map(s => s.replace(/^[-*]\s*/, "").trim()); // clean up bullets if any
 
         console.log("📌 Parsed Subjects:", subjects);
 
