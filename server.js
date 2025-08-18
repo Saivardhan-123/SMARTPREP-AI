@@ -19,12 +19,13 @@ app.use(express.urlencoded({ extended: true }));
 // Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'smartprep-secret-key',
-    resave: false,
+    resave: true,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // HTTPS in production
+        secure: false, // Set to false for Render compatibility
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        sameSite: 'lax', // More permissive for cross-origin
+        httpOnly: true
     }
 }));
 
@@ -93,8 +94,10 @@ app.post("/api/login", async (req, res) => {
         
         if (result.success) {
             req.session.user = result.user;
+            console.log("✅ User logged in successfully:", { username: result.user.username, sessionId: req.sessionID });
             res.json({ success: true, message: result.message, user: result.user });
         } else {
+            console.log("❌ Login failed:", result.message);
             res.status(401).json({ error: result.message });
         }
     } catch (error) {
@@ -113,11 +116,24 @@ app.post("/api/logout", (req, res) => {
 });
 
 app.get("/api/check-auth", (req, res) => {
+    console.log("🔍 Checking auth - Session:", req.sessionID, "User:", req.session?.user?.username || 'none');
     if (req.session && req.session.user) {
         res.json({ authenticated: true, user: req.session.user });
     } else {
         res.json({ authenticated: false });
     }
+});
+
+// Debug endpoint for session information
+app.get("/api/debug-session", (req, res) => {
+    res.json({
+        sessionID: req.sessionID,
+        hasSession: !!req.session,
+        hasUser: !!(req.session && req.session.user),
+        user: req.session?.user || null,
+        cookie: req.headers.cookie,
+        userAgent: req.headers['user-agent']
+    });
 });
 
 // ✅ Route: Get subjects

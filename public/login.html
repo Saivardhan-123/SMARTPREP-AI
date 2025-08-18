@@ -178,9 +178,9 @@
                         localStorage.setItem('rememberMe', 'true');
                     }
                     
-                    // Redirect to main page (which will show dashboard for authenticated users)
+                    // Redirect to dashboard page
                     setTimeout(() => {
-                        window.location.href = '/';
+                        window.location.href = '/dashboard';
                     }, 1500);
                 } else {
                     // Show error message
@@ -218,7 +218,7 @@
                 const data = await response.json();
                 
                 if (data.authenticated) {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/dashboard';
                 }
             } catch (error) {
                 console.error('Auth check error:', error);
