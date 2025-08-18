@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SMARTPREP</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>SMARTPREP</h1>
+            <p>Your AI-Powered Learning Companion</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" required autocomplete="username">
+                <div class="input-feedback" id="username-feedback"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                    <button type="button" class="password-toggle" id="passwordToggle">
+                        <span class="eye-icon">👁️</span>
+                    </button>
+                </div>
+                <div class="input-feedback" id="password-feedback"></div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    <span class="checkmark"></span>
+                    Remember me for 30 days
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="loginBtn">
+                <span class="btn-text">Sign In</span>
+                <span class="btn-loading">Signing In...</span>
+            </button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+        </form>
+
+        <div class="forgot-password">
+            <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+        </div>
+
+        <div class="auth-switch">
+            <p>Don't have an account?</p>
+            <a href="register.html">Create Account</a>
+        </div>
+    </div>
+
+    <script>
+        // Password toggle functionality
+        document.getElementById('passwordToggle').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const eyeIcon = this.querySelector('.eye-icon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                eyeIcon.textContent = '🙈';
+            } else {
+                passwordField.type = 'password';
+                eyeIcon.textContent = '👁️';
+            }
+        });
+
+        // Input validation feedback
+        function validateInput(inputId, feedbackId, validationFn, errorMessage) {
+            const input = document.getElementById(inputId);
+            const feedback = document.getElementById(feedbackId);
+            
+            input.addEventListener('blur', function() {
+                if (this.value && !validationFn(this.value)) {
+                    feedback.textContent = errorMessage;
+                    feedback.className = 'input-feedback error';
+                    this.classList.add('error');
+                } else {
+                    feedback.textContent = '';
+                    feedback.className = 'input-feedback';
+                    this.classList.remove('error');
+                }
+            });
+        }
+
+        // Email/username validation
+        validateInput('username', 'username-feedback', 
+            (value) => value.length >= 3,
+            'Username must be at least 3 characters long'
+        );
+
+        // Password validation
+        validateInput('password', 'password-feedback',
+            (value) => value.length >= 6,
+            'Password must be at least 6 characters long'
+        );
+
+        // Forgot password functionality
+        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-info">
+                    Password reset feature coming soon! Please contact support for assistance.
+                </div>
+            `;
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const loading = document.getElementById('loading');
+            const loginBtn = document.getElementById('loginBtn');
+            const alertContainer = document.getElementById('alert-container');
+            
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+            
+            // Client-side validation
+            if (username.length < 3) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        Please enter a valid username or email
+                    </div>
+                `;
+                return;
+            }
+            
+            if (password.length < 6) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        Password must be at least 6 characters long
+                    </div>
+                `;
+                return;
+            }
+            
+            // Show loading state
+            loading.classList.add('show');
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password, rememberMe })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>Welcome back!</strong> ${data.message}
+                        </div>
+                    `;
+                    
+                    // Store remember me preference
+                    if (rememberMe) {
+                        localStorage.setItem('rememberMe', 'true');
+                    }
+                    
+                    // Redirect to main page (which will show dashboard for authenticated users)
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    // Show error message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-error">
+                            <strong>Login Failed:</strong> ${data.error}
+                        </div>
+                    `;
+                    
+                    // Shake the form for visual feedback
+                    document.querySelector('.auth-container').classList.add('shake');
+                    setTimeout(() => {
+                        document.querySelector('.auth-container').classList.remove('shake');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>Connection Error:</strong> Please check your internet connection and try again.
+                    </div>
+                `;
+            } finally {
+                // Hide loading state
+                loading.classList.remove('show');
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Check if user is already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+            }
+        }
+
+        // Load remember me preference
+        function loadRememberMe() {
+            const rememberMe = localStorage.getItem('rememberMe');
+            if (rememberMe === 'true') {
+                document.getElementById('rememberMe').checked = true;
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadRememberMe();
+        });
+    </script>
+</body>
+</html>

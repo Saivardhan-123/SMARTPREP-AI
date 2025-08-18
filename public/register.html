@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SMARTPREP</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>SMARTPREP</h1>
+            <p>Join thousands of students achieving their goals</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <form id="registerForm" class="auth-form">
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="fullName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="passwordToggle">
+                        <span class="eye-icon">👁️</span>
+                    </button>
+                </div>
+                <div class="input-feedback" id="password-feedback"></div>
+                <div class="password-strength" id="password-strength"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="confirmPasswordToggle">
+                        <span class="eye-icon">👁️</span>
+                    </button>
+                </div>
+                <div class="input-feedback" id="confirm-password-feedback"></div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms">
+                    <span class="checkmark"></span>
+                    I agree to the <a href="#" style="color: #667eea;">Terms of Service</a> and <a href="#" style="color: #667eea;">Privacy Policy</a>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="registerBtn">
+                <span class="btn-text">Create Account</span>
+                <span class="btn-loading">Creating Account...</span>
+            </button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+        </form>
+
+        <div class="auth-switch">
+            <p>Already have an account?</p>
+            <a href="login.html">Sign In</a>
+        </div>
+    </div>
+
+    <script>
+        // Password toggle functionality
+        function setupPasswordToggle(toggleId, inputId) {
+            document.getElementById(toggleId).addEventListener('click', function() {
+                const passwordField = document.getElementById(inputId);
+                const eyeIcon = this.querySelector('.eye-icon');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    eyeIcon.textContent = '🙈';
+                } else {
+                    passwordField.type = 'password';
+                    eyeIcon.textContent = '👁️';
+                }
+            });
+        }
+
+        setupPasswordToggle('passwordToggle', 'password');
+        setupPasswordToggle('confirmPasswordToggle', 'confirmPassword');
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let score = 0;
+            let feedback = [];
+            
+            if (password.length >= 8) score++;
+            else feedback.push('At least 8 characters');
+            
+            if (/[a-z]/.test(password)) score++;
+            else feedback.push('Lowercase letter');
+            
+            if (/[A-Z]/.test(password)) score++;
+            else feedback.push('Uppercase letter');
+            
+            if (/[0-9]/.test(password)) score++;
+            else feedback.push('Number');
+            
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+            else feedback.push('Special character');
+            
+            return { score, feedback };
+        }
+
+        // Real-time password validation
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthDiv = document.getElementById('password-strength');
+            
+            if (password.length === 0) {
+                strengthDiv.innerHTML = '';
+                return;
+            }
+            
+            const { score, feedback } = checkPasswordStrength(password);
+            let strengthText = '';
+            let strengthClass = '';
+            
+            if (score < 2) {
+                strengthText = 'Weak';
+                strengthClass = 'weak';
+            } else if (score < 4) {
+                strengthText = 'Medium';
+                strengthClass = 'medium';
+            } else {
+                strengthText = 'Strong';
+                strengthClass = 'strong';
+            }
+            
+            strengthDiv.innerHTML = `
+                <div class="strength-indicator ${strengthClass}">
+                    <div class="strength-bar">
+                        <div class="strength-fill" style="width: ${(score / 5) * 100}%"></div>
+                    </div>
+                    <span class="strength-text">Password strength: ${strengthText}</span>
+                </div>
+            `;
+        });
+
+        // Confirm password validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            const feedback = document.getElementById('confirm-password-feedback');
+            
+            if (confirmPassword.length === 0) {
+                feedback.textContent = '';
+                feedback.className = 'input-feedback';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                feedback.textContent = 'Passwords do not match';
+                feedback.className = 'input-feedback error';
+                this.classList.add('error');
+            } else {
+                feedback.textContent = 'Passwords match ✓';
+                feedback.className = 'input-feedback success';
+                this.classList.remove('error');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            const loading = document.getElementById('loading');
+            const registerBtn = document.getElementById('registerBtn');
+            const alertContainer = document.getElementById('alert-container');
+            
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+            
+            // Validate terms agreement
+            if (!agreeTerms) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        Please agree to the Terms of Service and Privacy Policy
+                    </div>
+                `;
+                // Focus on the checkbox container to help user locate it
+                document.getElementById('agreeTerms').parentElement.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        Passwords do not match
+                    </div>
+                `;
+                return;
+            }
+            
+            // Validate password strength
+            const { score } = checkPasswordStrength(password);
+            if (score < 2) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        Please choose a stronger password
+                    </div>
+                `;
+                return;
+            }
+            
+            // Show loading state
+            loading.classList.add('show');
+            registerBtn.classList.add('loading');
+            registerBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ fullName, username, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>Success!</strong> ${data.message}! Redirecting to login...
+                        </div>
+                    `;
+                    
+                    // Redirect to login after short delay
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    // Show error message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-error">
+                            <strong>Registration Failed:</strong> ${data.error}
+                        </div>
+                    `;
+                    
+                    // Shake the form for visual feedback
+                    document.querySelector('.auth-container').classList.add('shake');
+                    setTimeout(() => {
+                        document.querySelector('.auth-container').classList.remove('shake');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>Connection Error:</strong> Please check your internet connection and try again.
+                    </div>
+                `;
+            } finally {
+                // Hide loading state
+                loading.classList.remove('show');
+                registerBtn.classList.remove('loading');
+                registerBtn.disabled = false;
+            }
+        });
+
+        // Check if user is already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+            }
+        }
+
+        // Check auth on page load
+        checkAuth();
+    </script>
+</body>
+</html>

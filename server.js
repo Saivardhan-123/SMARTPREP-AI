@@ -2,6 +2,9 @@ const express = require("express");
 const path = require("path");
 const axios = require("axios");
 const cors = require("cors");
+const session = require("express-session");
+const { initializeDatabase } = require("./database");
+const { registerUser, loginUser } = require("./auth");
 require("dotenv").config();
 
 const app = express();
@@ -11,6 +14,31 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Session configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'smartprep-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // HTTPS in production
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+    }
+}));
+
+// Main route - check authentication and serve appropriate page (MUST BE BEFORE static middleware)
+app.get("/", (req, res) => {
+    if (req.session && req.session.user) {
+        // User is authenticated, serve dashboard
+        res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+    } else {
+        // User is not authenticated, serve login page
+        res.sendFile(path.join(__dirname, "public", "login.html"));
+    }
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/api/hello", (req, res) => {
@@ -20,6 +48,76 @@ app.get("/api/hello", (req, res) => {
 // Add health check endpoint at the top of your routes
 app.get("/health", (req, res) => {
     res.json({ status: "ok" });
+});
+
+// Authentication middleware
+function requireAuth(req, res, next) {
+    if (req.session && req.session.user) {
+        return next();
+    } else {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+}
+
+// Authentication routes
+app.post("/api/register", async (req, res) => {
+    try {
+        const { username, email, password, fullName } = req.body;
+        
+        if (!username || !email || !password || !fullName) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        const result = await registerUser({ username, email, password, fullName });
+        
+        if (result.success) {
+            res.json({ success: true, message: result.message });
+        } else {
+            res.status(400).json({ error: result.message });
+        }
+    } catch (error) {
+        console.error("Registration error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post("/api/login", async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username and password are required" });
+        }
+
+        const result = await loginUser({ username, password });
+        
+        if (result.success) {
+            req.session.user = result.user;
+            res.json({ success: true, message: result.message, user: result.user });
+        } else {
+            res.status(401).json({ error: result.message });
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: "Could not log out" });
+        }
+        res.json({ success: true, message: "Logged out successfully" });
+    });
+});
+
+app.get("/api/check-auth", (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({ authenticated: true, user: req.session.user });
+    } else {
+        res.json({ authenticated: false });
+    }
 });
 
 // ✅ Route: Get subjects
@@ -504,12 +602,42 @@ Do not include any additional text, headers, or formatting.`;
     }
 });
 
-// Catch-all route for serving the React app (must be last)
-app.get("*", (req, res) => {
+// Route for the main app (protected)
+app.get("/app", requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Dashboard route (protected)
+app.get("/dashboard", requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
+
+// This route has been moved above static middleware
+
+// Welcome page route
+app.get("/welcome", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "welcome.html"));
+});
+
+// Catch-all route for serving login page (must be last)
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
 // ✅ Start the server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+async function startServer() {
+    try {
+        // Initialize database
+        await initializeDatabase();
+        
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+            console.log(`📱 Access your app at: http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+startServer();

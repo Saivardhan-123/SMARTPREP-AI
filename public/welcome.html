@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SMARTPREP</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="auth-container" style="max-width: 900px;">
+        <div class="logo">
+            <h1>SMARTPREP</h1>
+            <p>Your AI-Powered Learning Companion</p>
+        </div>
+
+        <div class="welcome-section">
+            <h2>Transform Your Learning Experience</h2>
+            <p style="color: #666; font-size: 1.1rem; margin-bottom: 30px;">
+                Join thousands of students who are achieving their academic goals with our intelligent study platform.
+            </p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>🎯 Personalized Learning</h3>
+                <p>Get study materials tailored to your state curriculum and grade level</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>🧠 AI-Generated MCQs</h3>
+                <p>Practice with unlimited questions generated specifically for your subjects</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>📊 Smart Timetables</h3>
+                <p>Create optimized study schedules that adapt to your learning pace</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>📚 Comprehensive Content</h3>
+                <p>Access detailed summaries and key points for all your topics</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn btn-primary" onclick="window.location.href='register.html'" style="margin-right: 15px;">
+                Get Started Free
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='login.html'">
+                Sign In
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e1e5e9;">
+            <p style="color: #888; font-size: 0.9rem;">
+                Trusted by students across India • Free to use • No hidden fees
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+            }
+        }
+
+        // Check auth on page load
+        checkAuth();
+    </script>
+</body>
+</html>

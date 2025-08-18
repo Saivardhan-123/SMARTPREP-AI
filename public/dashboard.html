@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SMARTPREP</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="auth-container" style="max-width: 600px;">
+        <div class="logo">
+            <h1>SMARTPREP</h1>
+            <p>Welcome to your learning dashboard</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div class="welcome-section">
+            <h2>Welcome back!</h2>
+            <div class="user-info" id="userInfo">
+                <p>Loading user information...</p>
+            </div>
+        </div>
+
+        <div class="main-action">
+            <div class="app-card">
+                <h3>🏠 SMARTPREP Application</h3>
+                <p>Access your personalized learning platform with AI-powered study materials, MCQ generation, and comprehensive curriculum content.</p>
+                <button class="btn btn-primary btn-large" onclick="window.location.href='/app'">Go to App</button>
+            </div>
+        </div>
+
+        <div class="auth-switch" style="margin-top: 40px;">
+            <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication and load user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                // Display user information
+                const userInfo = document.getElementById('userInfo');
+                userInfo.innerHTML = `
+                    <h3>Hello, ${data.user.fullName}!</h3>
+                    <p>Username: ${data.user.username}</p>
+                    <p>Email: ${data.user.email}</p>
+                `;
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/';
+            }
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const alertContainer = document.getElementById('alert-container');
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            ${data.message}
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    console.error('Logout failed');
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        // Load user info on page load
+        loadUserInfo();
+    </script>
+</body>
+</html>

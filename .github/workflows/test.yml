@@ -1,0 +1,58 @@
+name: Test SMARTPREP Application
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check if server starts
+      run: |
+        timeout 10s npm start &
+        sleep 5
+        if kill -0 $! 2>/dev/null; then
+          echo "✅ Server started successfully"
+          kill $!
+        else
+          echo "❌ Server failed to start"
+          exit 1
+        fi
+
+    - name: Check for required files
+      run: |
+        required_files=("package.json" "server.js" "render.yaml" ".gitignore" "README.md" "config.js" "database.js" "auth.js")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Missing required file: $file"
+            exit 1
+          fi
+          echo "✅ Found $file"
+        done
+
+    - name: Validate package.json
+      run: |
+        if ! npm run build; then
+          echo "❌ Build validation failed"
+          exit 1
+        fi
+        echo "✅ Package.json validation passed"
